@@ -1,6 +1,9 @@
 import NextAuth from 'next-auth';
 import OsuProvider from 'next-auth/providers/osu';
 import { FirestoreAdapter } from '@next-auth/firebase-adapter';
+import { cert } from 'firebase-admin/app';
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 export const authOptions = {
   providers: [
@@ -9,7 +12,14 @@ export const authOptions = {
       clientSecret: process.env.OSU_CLIENT_SECRET,
     }),
   ],
-  adapter: FirestoreAdapter({ name: 'osuAuth', namingStrategy: 'snake_case' }),
+  adapter: FirestoreAdapter({
+    credential: cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: serviceAccount.private_key,
+    }),
+    namingStrategy: 'snake_case',
+  }),
   callbacks: {
     async jwt({ token, user, account, profile, isNewUser }) {
       if (account) {

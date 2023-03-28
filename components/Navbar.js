@@ -7,8 +7,6 @@ export default function Navbar() {
   const username = null;
   const { data: session, status } = useSession();
 
-  console.log({ session, status });
-
   return (
     <nav className="navbar">
       <ul>
