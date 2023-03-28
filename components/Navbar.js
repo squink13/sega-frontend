@@ -17,7 +17,9 @@ export default function Navbar() {
         {/* user is signed-in and has username */}
         {status === 'authenticated' && (
           <>
-            <li className="push-left">{session.user.name}</li>
+            <Link href={`/${session.user.name}`}>
+              <li className="push-left">{session.user.name}</li>
+            </Link>
             <li>
               <Link href={`/${session.user.name}`}>
                 <img src={session.user.image} alt={session.user.name} />
