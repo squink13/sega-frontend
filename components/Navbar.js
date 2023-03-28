@@ -3,8 +3,6 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 
 // Top navbar
 export default function Navbar() {
-  const user = null;
-  const username = null;
   const { data: session, status } = useSession();
 
   return (
