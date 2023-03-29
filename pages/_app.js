@@ -1,5 +1,4 @@
-import Navbar from '@/components/Navbar';
-import Navbar2 from '@/components/Navbar2';
+import NavigationBar from '@/components/NavigationBar';
 import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import { createTheme, NextUIProvider } from '@nextui-org/react';
@@ -26,7 +25,7 @@ export default function App({ Component, pageProps }) {
       >
         <NextUIProvider>
           <SessionProvider>
-            <Navbar2 />
+            <NavigationBar />
           </SessionProvider>
           <Component {...pageProps} />
         </NextUIProvider>

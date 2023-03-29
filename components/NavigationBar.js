@@ -2,7 +2,7 @@ import { Avatar, Button, Container, Navbar, Text } from '@nextui-org/react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
-export default function Navbar2() {
+export default function NavigationBar() {
   const { data: session, status } = useSession();
 
   return (
@@ -19,9 +19,21 @@ export default function Navbar2() {
         </Link>
       </Navbar.Brand>
       <Navbar.Content>
-        <Navbar.Link href="#">Home</Navbar.Link>
-        <Navbar.Link href="#">Test 2</Navbar.Link>
-        <Navbar.Link href="#">Test 3</Navbar.Link>
+        <Navbar.Link>
+          <Link href="/">
+            <Text>Home</Text>
+          </Link>
+        </Navbar.Link>
+        <Navbar.Link>
+          <Link href="#">
+            <Text>Link 2</Text>
+          </Link>
+        </Navbar.Link>
+        <Navbar.Link>
+          <Link href="#">
+            <Text>Link 3</Text>
+          </Link>
+        </Navbar.Link>
       </Navbar.Content>
       <Navbar.Content>
         {status === 'authenticated' ? (
@@ -40,6 +52,12 @@ export default function Navbar2() {
                   color="gradient"
                   src={session.user.image}
                   size="lg"
+                  css={{
+                    cursor: 'pointer',
+                    ':hover': {
+                      opacity: 0.8,
+                    },
+                  }}
                 />
               </Link>
             </Navbar.Item>
@@ -48,7 +66,7 @@ export default function Navbar2() {
                 auto
                 flat
                 href="#"
-                onClick={(e) => {
+                onClick={() => {
                   signOut('osu');
                 }}
               >
@@ -62,7 +80,7 @@ export default function Navbar2() {
               auto
               flat
               href="#"
-              onClick={(e) => {
+              onClick={() => {
                 signIn('osu');
               }}
             >
