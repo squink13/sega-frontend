@@ -15,7 +15,7 @@ export default function Navbar() {
         </li>
 
         {/* user is signed-in and has username */}
-        {status === 'authenticated' && (
+        {status === 'authenticated' ? (
           <>
             <Link href={`/${session.user.name}`}>
               <li className="push-left">{session.user.name}</li>
@@ -39,10 +39,7 @@ export default function Navbar() {
               </Link>
             </li>
           </>
-        )}
-
-        {/* user is not signed OR has not created username */}
-        {status !== 'authenticated' && (
+        ) : (
           <li>
             <Link href="/api/auth/signin">
               <button
