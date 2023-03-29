@@ -21,16 +21,16 @@ export const authOptions = {
     namingStrategy: 'snake_case',
   }),
   callbacks: {
-    async jwt({ token, user, account, profile, isNewUser }) {
+    async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
-        token.osuId = profile.id;
-        token.countryCode = profile.country_code;
+        token.osuId = account.id;
+        token.countryCode = account.country_code;
       }
 
       return token;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       session.user.id = token.osuId;
       session.user.country_code = token.countryCode;
       session.user.country_flag = `https://osu.ppy.sh/images/flags/${token.countryCode}.png`;

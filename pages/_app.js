@@ -1,7 +1,7 @@
 import NavigationBar from '@/components/NavigationBar';
 import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
-import { createTheme, NextUIProvider } from '@nextui-org/react';
+import { createTheme, NextUIProvider, styled } from '@nextui-org/react';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
 const lightTheme = createTheme({
@@ -10,6 +10,10 @@ const lightTheme = createTheme({
 
 const darkTheme = createTheme({
   type: 'dark',
+});
+
+const Box = styled('div', {
+  boxSizing: 'border-box',
 });
 
 export default function App({ Component, pageProps }) {
@@ -26,7 +30,18 @@ export default function App({ Component, pageProps }) {
         <NextUIProvider>
           <SessionProvider>
             <NavigationBar />
-            <Component {...pageProps} />
+            <Box
+              css={{
+                px: '$12',
+                py: '$15',
+                mt: '$12',
+                '@xsMax': { px: '$10' },
+                maxWidth: '800px',
+                margin: '0 auto',
+              }}
+            >
+              <Component {...pageProps} />
+            </Box>
           </SessionProvider>
         </NextUIProvider>
       </NextThemesProvider>

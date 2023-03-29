@@ -2,8 +2,12 @@ import { Avatar, Button, Container, Navbar, Text } from '@nextui-org/react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
+//TODO fix various errors, check web console
+
 export default function NavigationBar() {
   const { data: session, status } = useSession();
+
+  console.log({ session, status });
 
   return (
     <Navbar isBordered variant={'static'}>
@@ -18,23 +22,28 @@ export default function NavigationBar() {
           </Text>
         </Link>
       </Navbar.Brand>
-      {/**
-      <Navbar.Content>
-        <Navbar.Link>
-          <Link href="/">
-            <Text>Link 1</Text>
-          </Link>
-        </Navbar.Link>
-        <Navbar.Link>
-          <Link href="/">
-            <Text>Link 2</Text>
-          </Link>
-        </Navbar.Link>
-        <Navbar.Link>
-          <Link href="/">
-            <Text>Link 3</Text>
-          </Link>
-        </Navbar.Link>
+      {/**<Navbar.Content>
+        <Navbar.Item>
+          <Navbar.Link>
+            <Link href="/">
+              <Text>Link 1</Text>
+            </Link>
+          </Navbar.Link>
+        </Navbar.Item>
+        <Navbar.Item>
+          <Navbar.Link>
+            <Link href="/">
+              <Text>Link 2</Text>
+            </Link>
+          </Navbar.Link>
+        </Navbar.Item>
+        <Navbar.Item>
+          <Navbar.Link>
+            <Link href="/">
+              <Text>Link 3</Text>
+            </Link>
+          </Navbar.Link>
+        </Navbar.Item>
       </Navbar.Content>*/}
       <Navbar.Content>
         {status === 'authenticated' ? (
