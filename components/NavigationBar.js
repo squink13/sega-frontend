@@ -6,7 +6,7 @@ export default function NavigationBar() {
   const { data: session, status } = useSession();
 
   return (
-    <Navbar variant={'static'} isBordered>
+    <Navbar isBordered variant={'static'}>
       <Navbar.Brand>
         <Link href="/">
           <Text
@@ -18,23 +18,24 @@ export default function NavigationBar() {
           </Text>
         </Link>
       </Navbar.Brand>
+      {/**
       <Navbar.Content>
         <Navbar.Link>
           <Link href="/">
-            <Text>Home</Text>
+            <Text>Link 1</Text>
           </Link>
         </Navbar.Link>
         <Navbar.Link>
-          <Link href="#">
+          <Link href="/">
             <Text>Link 2</Text>
           </Link>
         </Navbar.Link>
         <Navbar.Link>
-          <Link href="#">
+          <Link href="/">
             <Text>Link 3</Text>
           </Link>
         </Navbar.Link>
-      </Navbar.Content>
+      </Navbar.Content>*/}
       <Navbar.Content>
         {status === 'authenticated' ? (
           <>
@@ -78,7 +79,7 @@ export default function NavigationBar() {
           <Navbar.Item>
             <Button
               auto
-              flat
+              color={'gradient'}
               href="#"
               onClick={() => {
                 signIn('osu');

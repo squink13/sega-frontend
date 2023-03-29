@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import Loader from '@/components/Loader';
 import { toast } from 'react-hot-toast';
-import { Container } from '@nextui-org/react';
+import { Container, Grid, Text } from '@nextui-org/react';
+import NavigationBar from '@/components/NavigationBar';
 
 export default function Home() {
   return (
     <Container>
-      <div>
-        <h1>Home Page</h1>
-        {/*Testing Link functionality*/}
+      {/**
         <Link
           prefetch={false}
           href={{
@@ -16,15 +15,15 @@ export default function Home() {
             query: { username: 'squink' },
           }}
         >
-          {"Squink's profile"}
         </Link>
-
-        {/*Testing Loader functionality*/}
+        
         <Loader show />
 
-        {/*Testing toast functionality*/}
-        <button onClick={() => toast.success('hello toast!')}>Toast</button>
-      </div>
+        <button onClick={() => toast.success('hello toast!')}>Toast</button> */}
+
+      <Grid.Container justify="center">
+        <Text h1>Home Page</Text>
+      </Grid.Container>
     </Container>
   );
 }

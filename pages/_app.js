@@ -26,8 +26,8 @@ export default function App({ Component, pageProps }) {
         <NextUIProvider>
           <SessionProvider>
             <NavigationBar />
+            <Component {...pageProps} />
           </SessionProvider>
-          <Component {...pageProps} />
         </NextUIProvider>
       </NextThemesProvider>
       <Toaster />
