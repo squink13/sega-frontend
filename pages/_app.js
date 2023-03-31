@@ -1,22 +1,25 @@
-import NavigationBar from '@/components/NavigationBar';
-import { Toaster } from 'react-hot-toast';
-import { SessionProvider } from 'next-auth/react';
-import { createTheme, NextUIProvider, styled } from '@nextui-org/react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import NavigationBar from "@/components/NavigationBar";
+import { Toaster } from "react-hot-toast";
+import { SessionProvider } from "next-auth/react";
+import { createTheme, NextUIProvider, styled } from "@nextui-org/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 const lightTheme = createTheme({
-  type: 'light',
+  type: "light",
 });
 
 const darkTheme = createTheme({
-  type: 'dark',
+  type: "dark",
 });
 
-const Box = styled('div', {
-  boxSizing: 'border-box',
+const Box = styled("div", {
+  boxSizing: "border-box",
 });
 
-export default function App({ Component, pageProps }) {
+export default function App({
+  Component,
+  pageProps: { session, ...pageProps },
+}) {
   return (
     <>
       <NextThemesProvider
@@ -28,16 +31,16 @@ export default function App({ Component, pageProps }) {
         }}
       >
         <NextUIProvider>
-          <SessionProvider>
+          <SessionProvider session={session}>
             <NavigationBar />
             <Box
               css={{
-                px: '$12',
-                py: '$15',
-                mt: '$12',
-                '@xsMax': { px: '$10' },
-                maxWidth: '800px',
-                margin: '0 auto',
+                px: "$12",
+                py: "$15",
+                mt: "$12",
+                "@xsMax": { px: "$10" },
+                maxWidth: "800px",
+                margin: "0 auto",
               }}
             >
               <Component {...pageProps} />

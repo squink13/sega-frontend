@@ -1,53 +1,98 @@
-import NextAuth from 'next-auth';
-import OsuProvider from 'next-auth/providers/osu';
-import { FirestoreAdapter } from '@next-auth/firebase-adapter';
-import { cert } from 'firebase-admin/app';
+import NextAuth from "next-auth";
+import OsuProvider from "next-auth/providers/osu";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+const osuConfig = OsuProvider({
+  clientId: process.env.OSU_CLIENT_ID,
+  clientSecret: process.env.OSU_CLIENT_SECRET,
+  profile(profile) {
+    return {
+      id: profile.id,
+      email: null,
+      name: profile.username,
+      image: profile.avatar_url,
+      country: profile.country.code,
+    };
+  },
+});
 
 export const authOptions = {
-  providers: [
-    OsuProvider({
-      clientId: process.env.OSU_CLIENT_ID,
-      clientSecret: process.env.OSU_CLIENT_SECRET,
-    }),
-  ],
-  adapter: FirestoreAdapter({
-    credential: cert({
-      projectId: serviceAccount.project_id,
-      clientEmail: serviceAccount.client_email,
-      privateKey: serviceAccount.private_key,
-    }),
-    namingStrategy: 'snake_case',
-  }),
+  providers: [osuConfig],
+  session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
-        token.osuId = account.id;
-        token.countryCode = account.country_code;
-      }
+    async signIn(user) {
+      console.log("Starting sign in callback...");
+      if (user) {
+        console.log("Returning user...");
 
+        // Extract the relevant data from the profile object
+        const newUser = {
+          name: user.profile.username,
+          image: user.profile.avatar_url,
+          country: user.profile.country.code,
+        };
+
+        const changed = (currentData, newData) => {
+          console.log("Checking if user data changed...");
+          for (const key in newData) {
+            if (
+              newData.hasOwnProperty(key) &&
+              currentData.hasOwnProperty(key)
+            ) {
+              if (currentData[key] !== newData[key]) {
+                return true;
+              }
+            }
+          }
+          console.log("User data unchanged, skipping update...");
+          return false;
+        };
+
+        // Update the user data in the database using Prisma
+        if (changed(user.user, newUser)) {
+          console.log("User data changed, updating...");
+          await prisma.user.update({
+            where: { id: user.user.id },
+            data: newUser,
+          });
+        }
+      }
+      return true;
+    },
+    // JSON Web Token stores a payload in the browser's cookies (if using JWT)
+    // This callback is called at sign in (created): user, account, profile, isNewUser is passed
+    // Or when updated (client accesses session): token is only passed
+    async jwt({ token, user, account, profile, isNewUser }) {
+      //on sign in
+      if (user && account) {
+        token.accessToken = account.access_token;
+      }
+      //on session access
       return token;
     },
-    async session({ session, token }) {
-      session.user.id = token.osuId;
-      session.user.country_code = token.countryCode;
-      session.user.country_flag = `https://osu.ppy.sh/images/flags/${token.countryCode}.png`;
+    async session({ session, token, user }) {
       return session;
     },
-    // ...other callbacks
   },
-  session: {
-    strategy: 'jwt',
+  events: {
+    async signIn(message) {
+      console.log("Sign in: ", message.user.name);
+    },
+    async signOut(message) {
+      console.log("Sign out: ", message.token.name);
+    },
+    async createUser(message) {
+      console.log("Create User: ", message);
+    },
+    async linkAccount(message) {
+      console.log("Link Account: ", message);
+    },
+    async session(message) {
+      console.log("Session Active");
+    },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
-    maxAge: 5 * 60 * 1000,
-  },
-  // Customize any built-in NextAuth pages here
-  //pages: {},
+  adapter: PrismaAdapter(prisma),
 };
 
 export default NextAuth(authOptions);

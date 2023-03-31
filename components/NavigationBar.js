@@ -1,22 +1,19 @@
-import { Avatar, Button, Container, Navbar, Text } from '@nextui-org/react';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import Link from 'next/link';
+import { Avatar, Button, Navbar, Text } from "@nextui-org/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 
 //TODO fix various errors, check web console
 
 export default function NavigationBar() {
   const { data: session, status } = useSession();
-
-  console.log({ session, status });
-
   return (
-    <Navbar isBordered variant={'static'}>
+    <Navbar isBordered variant={"static"}>
       <Navbar.Brand>
         <Link href="/">
           <Text
             size={40}
             weight="bold"
-            css={{ textGradient: '45deg, $blue600 -10%, $pink600 100%' }}
+            css={{ textGradient: "45deg, $blue600 -10%, $pink600 100%" }}
           >
             SEGS
           </Text>
@@ -46,7 +43,7 @@ export default function NavigationBar() {
         </Navbar.Item>
       </Navbar.Content>*/}
       <Navbar.Content>
-        {status === 'authenticated' ? (
+        {status === "authenticated" ? (
           <>
             <Navbar.Item>
               <Navbar.Link>
@@ -63,8 +60,8 @@ export default function NavigationBar() {
                   src={session.user.image}
                   size="lg"
                   css={{
-                    cursor: 'pointer',
-                    ':hover': {
+                    cursor: "pointer",
+                    ":hover": {
                       opacity: 0.8,
                     },
                   }}
@@ -76,22 +73,26 @@ export default function NavigationBar() {
                 auto
                 flat
                 href="#"
-                onClick={() => {
-                  signOut('osu');
+                onPress={() => {
+                  signOut("osu");
                 }}
               >
                 Log out
               </Button>
             </Navbar.Item>
           </>
+        ) : status === "loading" ? (
+          <Navbar.Item>
+            <Text>Loading...</Text>
+          </Navbar.Item>
         ) : (
           <Navbar.Item>
             <Button
               auto
-              color={'gradient'}
+              color={"gradient"}
               href="#"
-              onClick={() => {
-                signIn('osu');
+              onPress={() => {
+                signIn("osu");
               }}
             >
               Log in

@@ -1,8 +1,4 @@
-import Link from 'next/link';
-import Loader from '@/components/Loader';
-import { toast } from 'react-hot-toast';
-import { Text, Spacer } from '@nextui-org/react';
-import NavigationBar from '@/components/NavigationBar';
+import { Text, Spacer } from "@nextui-org/react";
 
 export default function Home() {
   return (
