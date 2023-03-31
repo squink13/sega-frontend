@@ -6,10 +6,16 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 const lightTheme = createTheme({
   type: "light",
+  theme: {
+    colors: {},
+  },
 });
 
 const darkTheme = createTheme({
   type: "dark",
+  theme: {
+    colors: {},
+  },
 });
 
 const Box = styled("div", {

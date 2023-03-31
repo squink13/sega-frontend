@@ -21,6 +21,7 @@ export const authOptions = {
   providers: [osuConfig],
   session: { strategy: "jwt" },
   callbacks: {
+    // Check for and apply user updates on sign in to the database
     async signIn(user) {
       console.log("Starting sign in callback...");
       if (user) {

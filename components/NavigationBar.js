@@ -1,11 +1,24 @@
-import { Avatar, Button, Navbar, Text } from "@nextui-org/react";
+import {
+  Avatar,
+  Button,
+  Navbar,
+  Text,
+  Switch,
+  useTheme,
+} from "@nextui-org/react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { MoonIcon } from "@/components/Icons/MoonIcon";
+import { SunIcon } from "@/components/Icons/SunIcon";
+import { useTheme as useNextTheme } from "next-themes";
 
-//TODO fix various errors, check web console
+// TODO: fix various errors, check web console
+// TODO: read next-auth docs on proper session handling
 
-export default function NavigationBar() {
+export default function NavigationBar({}) {
   const { data: session, status } = useSession();
+  const { setTheme } = useNextTheme();
+  const { isDark } = useTheme();
   return (
     <Navbar isBordered variant={"static"}>
       <Navbar.Brand>
@@ -43,20 +56,27 @@ export default function NavigationBar() {
         </Navbar.Item>
       </Navbar.Content>*/}
       <Navbar.Content>
+        <Switch
+          checked={isDark}
+          size="md"
+          iconOff={<SunIcon filled />}
+          iconOn={<MoonIcon filled />}
+          onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+        />
         {status === "authenticated" ? (
           <>
             <Navbar.Item>
               <Navbar.Link>
                 <Link href={`/${session.user.id}`}>
-                  <Text>{session.user.name}</Text>
+                  <Text b>{session.user.name}</Text>
                 </Link>
               </Navbar.Link>
             </Navbar.Item>
             <Navbar.Item>
               <Link href={`/${session.user.id}`}>
                 <Avatar
+                  color={"gradient"}
                   bordered
-                  color="gradient"
                   src={session.user.image}
                   size="lg"
                   css={{
@@ -83,7 +103,7 @@ export default function NavigationBar() {
           </>
         ) : status === "loading" ? (
           <Navbar.Item>
-            <Text>Loading...</Text>
+            <Text b>Loading...</Text>
           </Navbar.Item>
         ) : (
           <Navbar.Item>
@@ -94,6 +114,7 @@ export default function NavigationBar() {
               onPress={() => {
                 signIn("osu");
               }}
+              shadow
             >
               Log in
             </Button>
