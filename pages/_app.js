@@ -1,5 +1,4 @@
 import NavigationBar from "@/components/NavigationBar";
-import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { createTheme, NextUIProvider, styled } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -54,7 +53,6 @@ export default function App({
           </SessionProvider>
         </NextUIProvider>
       </NextThemesProvider>
-      <Toaster />
     </>
   );
 }
