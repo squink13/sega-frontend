@@ -6,6 +6,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useTheme as useNextTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import { useMediaQuery } from "react-responsive";
 
 // TODO: fix various errors, check web console
 // TODO: read next-auth docs on proper session handling
@@ -14,6 +15,9 @@ export default function NavigationBar({}) {
   const { data: session, status } = useSession();
   const { setTheme } = useNextTheme();
   const { isDark } = useTheme();
+
+  const isDesktop = useMediaQuery({ minWidth: 768 });
+
   return (
     <Navbar isBordered variant={"static"}>
       <Navbar.Brand>
@@ -51,22 +55,26 @@ export default function NavigationBar({}) {
         </Navbar.Item>
       </Navbar.Content>*/}
       <Navbar.Content>
-        <Switch
-          checked={isDark}
-          size="md"
-          iconOff={<SunIcon filled />}
-          iconOn={<MoonIcon filled />}
-          onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
-        />
+        {isDesktop && (
+          <Switch
+            checked={isDark}
+            size="md"
+            iconOff={<SunIcon filled />}
+            iconOn={<MoonIcon filled />}
+            onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+          />
+        )}
         {status === "authenticated" ? (
           <>
-            <Navbar.Item>
-              <Navbar.Link>
-                <Link href={`/${session.user.id}`}>
-                  <Text b>{session.user.name}</Text>
-                </Link>
-              </Navbar.Link>
-            </Navbar.Item>
+            {isDesktop && (
+              <Navbar.Item>
+                <Navbar.Link>
+                  <Link href={`/${session.user.id}`}>
+                    <Text b>{session.user.name}</Text>
+                  </Link>
+                </Navbar.Link>
+              </Navbar.Item>
+            )}
             <Navbar.Item>
               <Link href={`/${session.user.id}`}>
                 <Avatar
