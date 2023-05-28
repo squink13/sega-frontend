@@ -21,10 +21,7 @@ const Box = styled("div", {
   boxSizing: "border-box",
 });
 
-export default function App({
-  Component,
-  pageProps: { session, ...pageProps },
-}) {
+export default function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <>
       <NextThemesProvider
@@ -44,8 +41,11 @@ export default function App({
                 py: "$15",
                 mt: "$12",
                 "@xsMax": { px: "$10" },
-                maxWidth: "800px",
+                maxWidth: "1366px",
                 margin: "0 auto",
+                display: "flex", // New
+                display: "grid", // New
+                placeItems: "center", // New
               }}
             >
               <Component {...pageProps} />

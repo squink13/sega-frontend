@@ -1,16 +1,11 @@
-import {
-  Avatar,
-  Button,
-  Navbar,
-  Text,
-  Switch,
-  useTheme,
-} from "@nextui-org/react";
+import { Avatar, Button, Navbar, Text, Switch, useTheme } from "@nextui-org/react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { MoonIcon } from "@/components/Icons/MoonIcon";
 import { SunIcon } from "@/components/Icons/SunIcon";
+import { Logo } from "@/components/Icons/Logo";
 import { useTheme as useNextTheme } from "next-themes";
+import Image from "next/image";
 
 // TODO: fix various errors, check web console
 // TODO: read next-auth docs on proper session handling
@@ -23,13 +18,13 @@ export default function NavigationBar({}) {
     <Navbar isBordered variant={"static"}>
       <Navbar.Brand>
         <Link href="/">
-          <Text
-            size={40}
-            weight="bold"
-            css={{ textGradient: "45deg, $blue600 -10%, $pink600 100%" }}
-          >
-            SEGS
-          </Text>
+          <Logo
+            width={150}
+            height={50}
+            style={{
+              marginTop: "10px",
+            }}
+          />
         </Link>
       </Navbar.Brand>
       {/**<Navbar.Content>

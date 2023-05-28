@@ -1,12 +1,15 @@
+import { XataClient } from "@/xata";
+import { XataAdapter } from "@next-auth/xata-adapter";
 import NextAuth from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
 import OsuProvider from "next-auth/providers/osu";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+
+const client = new XataClient();
 
 const osuConfig = OsuProvider({
   clientId: process.env.OSU_CLIENT_ID,
   clientSecret: process.env.OSU_CLIENT_SECRET,
-  profile(profile) {
+  /* profile(profile) {
     return {
       id: profile.id,
       email: null,
@@ -14,15 +17,24 @@ const osuConfig = OsuProvider({
       image: profile.avatar_url,
       country: profile.country.code,
     };
-  },
+  }, */
+});
+
+const discordConfig = DiscordProvider({
+  clientId: process.env.DISCORD_CLIENT_ID,
+  clientSecret: process.env.DISCORD_CLIENT_SECRET,
+  authorization: "https://discord.com/api/oauth2/authorize?scope=identify+email+guilds+guilds.join",
+  /* profile(profile) {
+    return {};
+  }, */
 });
 
 export const authOptions = {
-  providers: [osuConfig],
+  providers: [osuConfig, discordConfig],
   session: { strategy: "jwt" },
   callbacks: {
     // Check for and apply user updates on sign in to the database
-    async signIn(user) {
+    /* async signIn(user) {
       console.log("Starting sign in callback...");
       if (user) {
         console.log("Returning user...");
@@ -37,10 +49,7 @@ export const authOptions = {
         const changed = (currentData, newData) => {
           console.log("Checking if user data changed...");
           for (const key in newData) {
-            if (
-              newData.hasOwnProperty(key) &&
-              currentData.hasOwnProperty(key)
-            ) {
+            if (newData.hasOwnProperty(key) && currentData.hasOwnProperty(key)) {
               if (currentData[key] !== newData[key]) {
                 return true;
               }
@@ -60,19 +69,34 @@ export const authOptions = {
         }
       }
       return true;
-    },
+    }, */
     // JSON Web Token stores a payload in the browser's cookies (if using JWT)
     // This callback is called at sign in (created): user, account, profile, isNewUser is passed
     // Or when updated (client accesses session): token is only passed
     async jwt({ token, user, account, profile, isNewUser }) {
       //on sign in
-      if (user && account) {
-        token.accessToken = account.access_token;
+      if (profile) {
+        if (account.provider === "osu") {
+        }
+        if (account.provider === "discord") {
+          console.log("Discord profile: ", profile);
+        }
+      }
+      if (account) {
+        token.provider = account.provider;
+        //token.access_token = account.access_token; //remove if unused
+        console.log("User signed in: ", token.provider);
       }
       //on session access
+
       return token;
     },
+    //exposes token client side
     async session({ session, token, user }) {
+      session.provider = token.provider;
+      //session.access_token = token.access_token; //remove if unused
+      session.sub = token.sub;
+
       return session;
     },
   },
@@ -89,11 +113,14 @@ export const authOptions = {
     async linkAccount(message) {
       console.log("Link Account: ", message);
     },
-    async session(message) {
+    /* async session(message) {
       console.log("Session Active");
-    },
+    }, */
   },
-  adapter: PrismaAdapter(prisma),
+  adapter: XataAdapter(client),
+  pages: {
+    signIn: "/not-signed-in",
+  },
 };
 
 export default NextAuth(authOptions);
