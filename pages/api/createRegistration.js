@@ -173,18 +173,18 @@ const handler = async (req, res) => {
         const wasAddedToGuild = await addMemberToGuild(guildId, discordUser.id, userAccessToken, discordBotToken);
         console.log("wasAddedToGuild", wasAddedToGuild);
 
-        const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
-        console.log("roleAdded", roleAdded);
-
-        const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
-        console.log("nicknameAdded", nicknameAdded);
-
         if (!wasAddedToGuild) {
           throw new Error("Failed to add user to guild");
         }
       } else {
         console.log("User is already in guild");
       }
+
+      const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
+      console.log("roleAdded", roleAdded);
+
+      const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
+      console.log("nicknameAdded", nicknameAdded);
 
       const registered = await xata.db.registered.create(osu_profile.id, {
         osu: osu_profile.id,
