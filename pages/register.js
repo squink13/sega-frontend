@@ -293,26 +293,46 @@ export default function Register() {
             <div style={{ maxWidth: "600px" }}>
               {osuData && discordData && (
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", maxWidth: "600px" }}>
-                  <NextUI.Input label="Username" type="text" value={osuData.username} readOnly />
+                  <NextUI.Input
+                    label="Username"
+                    type="text"
+                    value={osuData.username}
+                    readOnly
+                    style={{ color: "grey" }}
+                  />
                   <NextUI.Spacer y={1} />
-                  <NextUI.Input label="ID" type="text" value={osuData.id} readOnly />
+                  <NextUI.Input label="ID" type="text" value={osuData.id} readOnly style={{ color: "grey" }} />
                   <NextUI.Spacer y={1} />
-                  <NextUI.Input label="Country" type="text" value={osuData.country.name} readOnly />
+                  <NextUI.Input
+                    label="Country"
+                    type="text"
+                    value={osuData.country.name}
+                    readOnly
+                    style={{ color: "grey" }}
+                  />
                   <NextUI.Spacer y={1} />
                   <NextUI.Input
                     label="Rank"
                     type="text"
                     value={`#${osuData.statistics.global_rank.toLocaleString()}`}
                     readOnly
+                    style={{ color: "grey" }}
                   />
                   <NextUI.Spacer y={1} />
-                  <NextUI.Input label="Badges" type="text" value={BadgeFilter(osuData)} readOnly />
+                  <NextUI.Input
+                    label="Badges"
+                    type="text"
+                    value={BadgeFilter(osuData)}
+                    readOnly
+                    style={{ color: "grey" }}
+                  />
                   <NextUI.Spacer y={1} />
                   <NextUI.Input
                     label="Discord"
                     type="text"
                     value={`${discordData.username}#${discordData.discriminator}`}
                     readOnly
+                    style={{ color: "grey" }}
                   />
                   <NextUI.Spacer y={1} />
                   <NextUI.Tooltip
@@ -325,6 +345,7 @@ export default function Register() {
                       value={`UTC${timezone >= 0 ? "+" : ""}${timezone}`}
                       readOnly
                       width="600px"
+                      style={{ color: "grey" }}
                     />
                   </NextUI.Tooltip>
                   <NextUI.Spacer y={1} />
@@ -349,8 +370,9 @@ export default function Register() {
                       readOnly
                       fullWidth
                       style={{ flex: "1" }}
+                      onClick={handler}
                     />
-                    <Button flat onPress={handler} size="sm" auto>
+                    <Button flat onPress={handler} auto>
                       Set Title
                     </Button>
                   </div>

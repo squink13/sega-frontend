@@ -6,7 +6,8 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useTheme as useNextTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useMediaQuery } from "react-responsive";
+
+//import { useMediaQuery } from "react-responsive";
 
 // TODO: fix various errors, check web console
 // TODO: read next-auth docs on proper session handling
@@ -16,7 +17,7 @@ export default function NavigationBar({}) {
   const { setTheme } = useNextTheme();
   const { isDark } = useTheme();
 
-  const isDesktop = useMediaQuery({ minWidth: 768 });
+  //const isDesktop = useMediaQuery({ minWidth: 768 });
 
   return (
     <Navbar isBordered variant={"static"}>
@@ -55,7 +56,7 @@ export default function NavigationBar({}) {
         </Navbar.Item>
       </Navbar.Content>*/}
       <Navbar.Content>
-        {isDesktop && (
+        <div style={{ display: "none" }}>
           <Switch
             checked={isDark}
             size="md"
@@ -63,10 +64,10 @@ export default function NavigationBar({}) {
             iconOn={<MoonIcon filled />}
             onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
           />
-        )}
+        </div>
         {status === "authenticated" ? (
           <>
-            {isDesktop && (
+            <div style={{ display: "none" }}>
               <Navbar.Item>
                 <Navbar.Link>
                   <Link href={`/${session.user.id}`}>
@@ -74,7 +75,7 @@ export default function NavigationBar({}) {
                   </Link>
                 </Navbar.Link>
               </Navbar.Item>
-            )}
+            </div>
             <Navbar.Item>
               <Link href={`/${session.user.id}`}>
                 <Avatar
@@ -123,6 +124,14 @@ export default function NavigationBar({}) {
             </Button>
           </Navbar.Item>
         )}
+
+        <style jsx>{`
+          @media (min-width: 768px) {
+            div {
+              display: block !important;
+            }
+          }
+        `}</style>
       </Navbar.Content>
     </Navbar>
   );
