@@ -1,4 +1,4 @@
-import BadgeFilter from "@/util/BadgeFilter";
+import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import * as NextUI from "@nextui-org/react";
 import { Modal, Text, Input, Row, Checkbox, Button, Card, useTheme, Link } from "@nextui-org/react";
 import moment from "moment-timezone";
@@ -316,7 +316,7 @@ export default function Register() {
                   <NextUI.Input
                     label="Rank"
                     type="text"
-                    value={`#${osuData.statistics.global_rank.toLocaleString()}`}
+                    value={`# ${osuData.statistics.global_rank.toLocaleString()}`}
                     readOnly
                     style={{ color: "grey" }}
                   />
@@ -324,7 +324,18 @@ export default function Register() {
                   <NextUI.Input
                     label="Badges"
                     type="text"
-                    value={BadgeFilter(osuData)}
+                    value={BadgeFilter(osuData.badges)}
+                    readOnly
+                    style={{ color: "grey" }}
+                  />
+                  <NextUI.Spacer y={1} />
+                  <NextUI.Input
+                    label="BWS Rank"
+                    type="text"
+                    value={`# ${BwsRankCalc(
+                      osuData.statistics.global_rank,
+                      BadgeFilter(osuData.badges)
+                    ).toLocaleString()}`}
                     readOnly
                     style={{ color: "grey" }}
                   />

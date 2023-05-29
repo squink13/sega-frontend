@@ -1,4 +1,4 @@
-import BadgeFilter from "@/util/BadgeFilter";
+import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import { XataClient } from "@/xata";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 
@@ -82,7 +82,14 @@ const handler = async (req, res) => {
       });
 
       if (!osuResponse.ok) {
-        throw new Error("Failed to fetch osu user data");
+        res.status(400).json({ message: "Failed to fetch osu user data" });
+        return;
+      }
+
+      const bwsRank = BwsRankCalc(osuUser.statistics.global_rank, BadgeFilter(osuUser.badges));
+      if (bwsRank < 1000 || bwsRank > 30000) {
+        res.status(400).json({ message: "Rank is not between 1000 and 30000" });
+        return;
       }
 
       const osuUser = await osuResponse.json();
@@ -97,7 +104,8 @@ const handler = async (req, res) => {
       });
 
       if (!discordResponse.ok) {
-        throw new Error("Failed to fetch discord user data");
+        res.status(400).json({ message: "Failed to fetch osu user data" });
+        return;
       }
 
       const discordUser = await discordResponse.json();
@@ -192,7 +200,7 @@ const handler = async (req, res) => {
         console.log("wasAddedToGuild", wasAddedToGuild);
 
         if (!wasAddedToGuild) {
-          throw new Error("Failed to add user to guild");
+          throw new Error(`Failed to add user with ID ${userId} to guild`);
         }
       } else {
         console.log("User is already in guild");
@@ -201,10 +209,17 @@ const handler = async (req, res) => {
       const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
       console.log("roleAdded", roleAdded);
 
+      if (!roleAdded) {
+        throw new Error(`Failed to add role for user with ID ${userId}`);
+      }
+
       const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
       console.log("nicknameAdded", nicknameAdded);
 
-      console.log("registered", registered);
+      if (!nicknameAdded) {
+        throw new Error(`Failed to add nickname for user with ID ${userId}`);
+      }
+
       // Add a row to the Google Sheet
       const sheet = doc.sheetsByTitle["_import"]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
       const newRow = {
@@ -224,13 +239,20 @@ const handler = async (req, res) => {
         Stamina: registered.stamina,
         Tech: registered.tech,
       };
-      await sheet.addRow(newRow);
+      try {
+        await sheet.addRow(newRow);
+      } catch (err) {
+        throw new Error("Failed to add row to Google Sheet: " + err.message);
+      }
 
       // Send the successful response back
+      console.log("registered", registered);
       res.status(200).json({ message: "Registered successfully!" });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: "Internal Server Error" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while processing your request. Please contact Squink on discord." });
     }
   }
 };

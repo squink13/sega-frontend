@@ -1,4 +1,4 @@
-export default function BadgeFilter(player) {
+export function BadgeFilter(badgesList) {
   const filteredWords = [
     "contrib",
     "nomination",
@@ -29,7 +29,7 @@ export default function BadgeFilter(player) {
   const ignoredBadges = new RegExp(filteredWords.join("|"), "i");
 
   let badges = 0;
-  for (let badge of player.badges) {
+  for (let badge of badgesList) {
     let awardedAt = new Date(badge.awarded_at);
     if (awardedAt.getFullYear() >= 2021 && !ignoredBadges.test(badge.description.toLowerCase())) {
       badges++;
@@ -37,4 +37,9 @@ export default function BadgeFilter(player) {
   }
 
   return badges;
+}
+
+export function BwsRankCalc(globalRank, badgeCount) {
+  let BWS = Math.pow(globalRank, Math.pow(0.9937, Math.pow(badgeCount, 1.7)));
+  return BWS;
 }
