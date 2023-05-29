@@ -162,11 +162,29 @@ const handler = async (req, res) => {
         });
       }
 
+      // TODO: add better errror handling and /fail endpoint
+      // TODO: error handling for when user cannot be added to guild
+      // TODO: error handling for when user cannot be added to role
+      // TODO: error handling for when user cannot be added to nickname
+
       const guildId = "1089693219383676948"; // production
       //const guildId = "931145825155944458"; // test
 
       const roleId = "1100250097008246876"; //production
       //const roleId = "1058675231755083796"; // test
+
+      const registered = await xata.db.registered.create(osu_profile.id, {
+        osu: osu_profile.id,
+        discord: discord_profile.id,
+        tz: timezone,
+        title: title,
+        aim: stats.Aim,
+        control: stats.Control,
+        speed: stats.Speed,
+        reading: stats.Reading,
+        stamina: stats.Stamina,
+        tech: stats.Tech,
+      });
 
       const isInGuild = await isUserInGuild(guildId, discordUser.id, discordBotToken);
       if (!isInGuild) {
@@ -185,19 +203,6 @@ const handler = async (req, res) => {
 
       const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
       console.log("nicknameAdded", nicknameAdded);
-
-      const registered = await xata.db.registered.create(osu_profile.id, {
-        osu: osu_profile.id,
-        discord: discord_profile.id,
-        tz: timezone,
-        title: title,
-        aim: stats.Aim,
-        control: stats.Control,
-        speed: stats.Speed,
-        reading: stats.Reading,
-        stamina: stats.Stamina,
-        tech: stats.Tech,
-      });
 
       console.log("registered", registered);
       // Add a row to the Google Sheet

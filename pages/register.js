@@ -105,7 +105,9 @@ export default function Register() {
 
   useEffect(() => {
     const zone = moment.tz.guess();
-    const offset = moment.tz(zone).utcOffset() / 60;
+    let offset = moment.tz(zone).utcOffset() / 60;
+    offset = Math.floor(offset);
+    offset = parseInt(offset);
     setTimezone(offset);
   }, []);
 
@@ -216,7 +218,7 @@ export default function Register() {
     return false;
   }
 
-  let error = false;
+  let errorCheck = false;
 
   const router = useRouter();
 
@@ -241,21 +243,21 @@ export default function Register() {
         .then((res) => {
           if (res.ok) {
           } else {
-            error = true;
+            errorCheck = true;
           }
           return res.json();
         })
         .then((data) => console.log(data))
         .catch((error) => {
           console.log("Error:", error);
-          error = true;
+          errorCheck = true;
         });
 
       console.log("Submitted");
-      if (!error) {
+      if (!errorCheck) {
         router.push("/success");
       } else {
-        alert("Something went wrong.");
+        alert("Something went wrong. Error: " + error);
       }
     } else {
       alert("Double check that you have filled out all the fields and agreed to the rules.");
@@ -335,6 +337,7 @@ export default function Register() {
                     style={{ color: "grey" }}
                   />
                   <NextUI.Spacer y={1} />
+                  {/* TODO: add regex/slider input to allow players to change their timezone at signup.*/}
                   <NextUI.Tooltip
                     content="Contact Squink after registering if default timezone is incorrect"
                     color="primary"

@@ -9,9 +9,6 @@ import Link from "next/link";
 
 //import { useMediaQuery } from "react-responsive";
 
-// TODO: fix various errors, check web console
-// TODO: read next-auth docs on proper session handling
-
 export default function NavigationBar({}) {
   const { data: session, status } = useSession();
   const { setTheme } = useNextTheme();
