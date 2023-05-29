@@ -209,10 +209,13 @@ export default function Register() {
 
   function checkCanSubmit() {
     if (selectedLeftOption && selectedRightOption) {
-      if ((total >= 10 && total <= 24) || Object.values(stats).every((value) => value >= 1)) {
-        if (Object.values(agreements).every((value) => value)) {
-          return true;
-        }
+      if (
+        total >= 10 &&
+        total <= 24 &&
+        Object.values(stats).every((value) => value >= 1) &&
+        Object.values(agreements).every((value) => value)
+      ) {
+        return true;
       }
     }
     return false;
@@ -222,7 +225,7 @@ export default function Register() {
 
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (checkCanSubmit()) {
@@ -233,30 +236,26 @@ export default function Register() {
         timezone: timezone,
       };
 
-      fetch("/api/createRegistration", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => {
-          if (res.ok) {
-          } else {
-            errorCheck = true;
-          }
-          return res.json();
-        })
-        .then((data) => console.log(data))
-        .catch((error) => {
-          console.log("Error:", error);
-          errorCheck = true;
+      try {
+        const response = await fetch("/api/createRegistration", {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
 
-      console.log("Submitted");
-      if (!errorCheck) {
+        const resData = await response.json();
+
+        if (!response.ok) {
+          alert("Something went wrong. Error: " + resData.message);
+          return;
+        }
+
+        console.log(resData);
         router.push("/success");
-      } else {
+      } catch (error) {
+        console.log("Error:", error);
         alert("Something went wrong. Error: " + error);
       }
     } else {
