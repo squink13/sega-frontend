@@ -86,13 +86,13 @@ const handler = async (req, res) => {
         return;
       }
 
-      const bwsRank = BwsRankCalc(osuUser.statistics.global_rank, BadgeFilter(osuUser.badges));
+      const osuUser = await osuResponse.json();
+
+      const bwsRank = BwsRankCalc(osuUser.statistics.global_rank, BadgeFilter(osuUser));
       if (bwsRank < 1000 || bwsRank > 30000) {
         res.status(400).json({ message: "Rank is not between 1000 and 30000" });
         return;
       }
-
-      const osuUser = await osuResponse.json();
 
       // Fetch user data from Discord
       const discordResponse = await fetch(process.env.NEXTAUTH_URL + "/api/db/getDiscordUser", {
@@ -194,32 +194,6 @@ const handler = async (req, res) => {
         tech: stats.Tech,
       });
 
-      const isInGuild = await isUserInGuild(guildId, discordUser.id, discordBotToken);
-      if (!isInGuild) {
-        const wasAddedToGuild = await addMemberToGuild(guildId, discordUser.id, userAccessToken, discordBotToken);
-        console.log("wasAddedToGuild", wasAddedToGuild);
-
-        if (!wasAddedToGuild) {
-          throw new Error(`Failed to add user with ID ${userId} to guild`);
-        }
-      } else {
-        console.log("User is already in guild");
-      }
-
-      const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
-      console.log("roleAdded", roleAdded);
-
-      if (!roleAdded) {
-        throw new Error(`Failed to add role for user with ID ${userId}`);
-      }
-
-      const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
-      console.log("nicknameAdded", nicknameAdded);
-
-      if (!nicknameAdded) {
-        throw new Error(`Failed to add nickname for user with ID ${userId}`);
-      }
-
       // Add a row to the Google Sheet
       const sheet = doc.sheetsByTitle["_import"]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
       const newRow = {
@@ -244,6 +218,24 @@ const handler = async (req, res) => {
       } catch (err) {
         throw new Error("Failed to add row to Google Sheet: " + err.message);
       }
+
+      const isInGuild = await isUserInGuild(guildId, discordUser.id, discordBotToken);
+      if (!isInGuild) {
+        const wasAddedToGuild = await addMemberToGuild(guildId, discordUser.id, userAccessToken, discordBotToken);
+        console.log("wasAddedToGuild", wasAddedToGuild);
+
+        if (!wasAddedToGuild) {
+          throw new Error(`Failed to add user with ID ${userId} to guild`);
+        }
+      } else {
+        console.log("User is already in guild");
+      }
+
+      const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
+      console.log("roleAdded", roleAdded);
+
+      const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
+      console.log("nicknameAdded", nicknameAdded);
 
       // Send the successful response back
       console.log("registered", registered);

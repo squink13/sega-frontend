@@ -324,7 +324,7 @@ export default function Register() {
                   <NextUI.Input
                     label="Badges"
                     type="text"
-                    value={BadgeFilter(osuData.badges)}
+                    value={BadgeFilter(osuData)}
                     readOnly
                     style={{ color: "grey" }}
                   />
@@ -332,10 +332,7 @@ export default function Register() {
                   <NextUI.Input
                     label="BWS Rank"
                     type="text"
-                    value={`# ${BwsRankCalc(
-                      osuData.statistics.global_rank,
-                      BadgeFilter(osuData.badges)
-                    ).toLocaleString()}`}
+                    value={`# ${BwsRankCalc(osuData.statistics.global_rank, BadgeFilter(osuData)).toLocaleString()}`}
                     readOnly
                     style={{ color: "grey" }}
                   />

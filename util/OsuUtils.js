@@ -1,4 +1,4 @@
-export function BadgeFilter(badgesList) {
+export function BadgeFilter(osuPlayerData) {
   const filteredWords = [
     "contrib",
     "nomination",
@@ -29,7 +29,7 @@ export function BadgeFilter(badgesList) {
   const ignoredBadges = new RegExp(filteredWords.join("|"), "i");
 
   let badges = 0;
-  for (let badge of badgesList) {
+  for (let badge of osuPlayerData.badges) {
     let awardedAt = new Date(badge.awarded_at);
     if (awardedAt.getFullYear() >= 2021 && !ignoredBadges.test(badge.description.toLowerCase())) {
       badges++;
