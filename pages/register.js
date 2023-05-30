@@ -561,7 +561,7 @@ export default function Register() {
                         onChange={() => handleAgreementChange("agreeToPlayTimes")}
                       >
                         <NextUI.Text>
-                          Match times are expected to fall on weekends between 15 & 18 UTC. You are expected to be able
+                          Match times are expected to fall on weekends between 15 & 17 UTC. You are expected to be able
                           to play at those times.
                         </NextUI.Text>
                       </NextUI.Checkbox>
