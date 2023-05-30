@@ -6,6 +6,8 @@ const xata = new XataClient();
 
 let doc;
 
+let sheet;
+
 (async () => {
   doc = new GoogleSpreadsheet("1H5rsFXvGaL6BAL5RT5gRhfGf5Oqnespf6G-6OxRuZ7I");
   await doc.useServiceAccountAuth({
@@ -13,6 +15,7 @@ let doc;
     private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
   });
   await doc.loadInfo();
+  sheet = doc.sheetsByTitle["_import"];
 })();
 
 const isUserInGuild = async (guildId, userId, token) => {
@@ -51,6 +54,18 @@ const addRole = async (guildId, userId, roleId, botToken) => {
   return response.ok;
 };
 
+const removeRole = async (guildId, userId, roleId, botToken) => {
+  const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response.ok;
+};
+
 const addNickname = async (guildId, userId, osu_profile, botToken) => {
   const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userId}`, {
     method: "PATCH",
@@ -65,8 +80,37 @@ const addNickname = async (guildId, userId, osu_profile, botToken) => {
   return response.ok;
 };
 
+const getGuildMember = async (guildId, userId, botToken) => {
+  const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch guild member data. Status: ${response.status}`);
+  }
+
+  const memberData = await response.json();
+
+  return memberData;
+};
+
+const deleteUserFromDatabase = async (userId) => {
+  await xata.db.registered.delete(String(userId));
+};
+
 const handler = async (req, res) => {
   const { userId, title, stats, timezone } = req.body;
+  const guildId = "1089693219383676948"; // production
+  //const guildId = "931145825155944458"; // test
+  const roleId = "1100250097008246876"; //production
+  //const roleId = "1058675231755083796"; // test
+  const discordBotToken = process.env.DISCORD_BOT_TOKEN;
+
+  let osuUser;
 
   if (req.method !== "POST") {
     res.status(405).json({ message: "Method Not Allowed" });
@@ -86,7 +130,7 @@ const handler = async (req, res) => {
         return;
       }
 
-      const osuUser = await osuResponse.json();
+      osuUser = await osuResponse.json();
 
       const bwsRank = BwsRankCalc(osuUser.statistics.global_rank, BadgeFilter(osuUser));
       if (bwsRank < 1000 || bwsRank > 30000) {
@@ -110,6 +154,72 @@ const handler = async (req, res) => {
 
       const discordUser = await discordResponse.json();
 
+      let isInGuild = false;
+      try {
+        isInGuild = await isUserInGuild(guildId, discordUser.id, discordBotToken);
+      } catch (err) {
+        console.log(err);
+      }
+
+      try {
+        let isUserRegistered = await xata.db.registered.filter({ id: `${osuUser.id}` }).getFirst();
+        if (isUserRegistered) {
+          if (isInGuild) {
+            try {
+              const member = await getGuildMember(guildId, discordUser.id, discordBotToken);
+              const correctNickname = osuUser.username;
+              const correctRoleId = roleId;
+              let nicknameAdded = true;
+              let roleAdded = true;
+
+              if (
+                (member.nick !== correctNickname && member.nick !== null) ||
+                member.user.username !== correctNickname
+              ) {
+                nicknameAdded = false;
+                try {
+                  nicknameAdded = await addNickname(guildId, discordUser.id, osuUser, discordBotToken);
+                } catch (err) {
+                  console.log(err);
+                }
+              }
+              if (!member.roles.includes(correctRoleId)) {
+                roleAdded = false;
+                try {
+                  roleAdded = await addRole(guildId, discordUser.id, correctRoleId, discordBotToken);
+                } catch (err) {
+                  console.log(err);
+                }
+              }
+
+              if (!nicknameAdded || !roleAdded) {
+                res.status(400).json({
+                  message: `User [${discordUser.id}] is already registered, however failed to apply role and/or nickname.`,
+                });
+                return;
+              } else {
+                res.status(400).json({
+                  message: `User [${osuUser.id}] is already registered!! If you would like to request any changes, modifications or removal of registration please contact Squink.`,
+                });
+                return;
+              }
+            } catch (err) {
+              console.log(err);
+              res.status(400).json({
+                message: `User [${discordUser.id}] is already registered, however a discord related error occured, please contact Squink.`,
+              });
+              return;
+            }
+          } else {
+            res.status(400).json({
+              message: `User [${discordUser.id}] is already registered, however is not in the Discord server.`,
+            });
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
+
       const discordAccount = await xata.db.nextauth_accounts
         .select(["id", "access_token"])
         .filter({ provider: "discord", "user.id": userId })
@@ -124,8 +234,6 @@ const handler = async (req, res) => {
       console.log("osuAccount", osuAccount);
 
       const userAccessToken = discordAccount[0].access_token;
-      // Check if user is in the discord guild
-      const discordBotToken = process.env.DISCORD_BOT_TOKEN;
 
       let osu_profile = await xata.db.osu_profile.filter({ id: `${osuUser.id}` }).getMany();
 
@@ -175,11 +283,22 @@ const handler = async (req, res) => {
       // TODO: error handling for when user cannot be added to role
       // TODO: error handling for when user cannot be added to nickname
 
-      const guildId = "1089693219383676948"; // production
-      //const guildId = "931145825155944458"; // test
+      if (!isInGuild) {
+        const wasAddedToGuild = await addMemberToGuild(guildId, discordUser.id, userAccessToken, discordBotToken);
+        console.log("wasAddedToGuild", wasAddedToGuild);
 
-      const roleId = "1100250097008246876"; //production
-      //const roleId = "1058675231755083796"; // test
+        if (!wasAddedToGuild) {
+          throw new Error(`Failed to add user with ID ${discordUser.id} to guild`);
+        }
+      } else {
+        console.log("User is already in guild");
+      }
+
+      const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
+      console.log("roleAdded", roleAdded);
+
+      const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
+      console.log("nicknameAdded", nicknameAdded);
 
       const registered = await xata.db.registered.create(osu_profile.id, {
         osu: osu_profile.id,
@@ -195,7 +314,6 @@ const handler = async (req, res) => {
       });
 
       // Add a row to the Google Sheet
-      const sheet = doc.sheetsByTitle["_import"]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
       const newRow = {
         Timestamp: registered.created_at,
         ID: osu_profile.id,
@@ -219,32 +337,38 @@ const handler = async (req, res) => {
         throw new Error("Failed to add row to Google Sheet: " + err.message);
       }
 
-      const isInGuild = await isUserInGuild(guildId, discordUser.id, discordBotToken);
-      if (!isInGuild) {
-        const wasAddedToGuild = await addMemberToGuild(guildId, discordUser.id, userAccessToken, discordBotToken);
-        console.log("wasAddedToGuild", wasAddedToGuild);
-
-        if (!wasAddedToGuild) {
-          throw new Error(`Failed to add user with ID ${userId} to guild`);
-        }
-      } else {
-        console.log("User is already in guild");
-      }
-
-      const roleAdded = await addRole(guildId, discordUser.id, roleId, discordBotToken);
-      console.log("roleAdded", roleAdded);
-
-      const nicknameAdded = await addNickname(guildId, discordUser.id, osu_profile, discordBotToken);
-      console.log("nicknameAdded", nicknameAdded);
-
       // Send the successful response back
       console.log("registered", registered);
       res.status(200).json({ message: "Registered successfully!" });
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ message: "An error occurred while processing your request. Please contact Squink on discord." });
+
+      /* try {
+        // If the user entry already exists delete the registration
+        let isUserRegistered = await xata.db.registered.filter({ id: `${osuUser.id}` }).getFirst();
+        if (isUserRegistered) {
+          try {
+            deleteUserFromDatabase(osuUser.id);
+          } catch (error) {
+            console.error("Error deleting user from database", error);
+          }
+
+          // User will be removed from sheet when cron job is run
+
+          try {
+            removeRole(guildId, discordUser.id, roleId, discordBotToken);
+          } catch (error) {
+            console.error("Error removing Discord role", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error in cleanup process", error);
+      }
+ */
+      res.status(500).json({
+        message:
+          "A critical error occurred while processing your request. Please contact Squink on discord as soon as possible.",
+      });
     }
   }
 };
