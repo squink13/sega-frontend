@@ -1,3 +1,4 @@
+import { getDiscordTag } from "@/util/DiscordUtils";
 import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import { XataClient } from "@/xata";
 import { GoogleSpreadsheet } from "google-spreadsheet";
@@ -321,7 +322,7 @@ const handler = async (req, res) => {
         Flag: osu_profile.country_code,
         Rank: osu_profile.rank,
         Badges: osu_profile.badges,
-        Discord: `${discord_profile.username}#${discord_profile.discriminator}`,
+        Discord: getDiscordTag(discord_profile.username, discord_profile.discriminator),
         Timezone: registered.tz,
         Title: registered.title,
         Aim: registered.aim,

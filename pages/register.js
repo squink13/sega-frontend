@@ -1,3 +1,4 @@
+import { getDiscordTag } from "@/util/DiscordUtils";
 import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import * as NextUI from "@nextui-org/react";
 import { Modal, Text, Input, Row, Checkbox, Button, Card, useTheme, Link } from "@nextui-org/react";
@@ -340,7 +341,7 @@ export default function Register() {
                   <NextUI.Input
                     label="Discord"
                     type="text"
-                    value={`${discordData.username}#${discordData.discriminator}`}
+                    value={getDiscordTag(discordData.username, discordData.discriminator)}
                     readOnly
                     style={{ color: "grey" }}
                   />
