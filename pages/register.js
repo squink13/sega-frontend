@@ -52,9 +52,10 @@ export default function Register() {
       setOsuData(osuUserData);
       setDiscordData(discordUserData);
     };
-
-    if (session.provider === "discord") {
-      fetchUserData();
+    if (session) {
+      if (session.provider === "discord") {
+        fetchUserData();
+      }
     }
   }, [session]);
 
