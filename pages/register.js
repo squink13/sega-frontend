@@ -53,7 +53,7 @@ export default function Register() {
       setDiscordData(discordUserData);
     };
 
-    if (session) {
+    if (session.provider === "discord") {
       fetchUserData();
     }
   }, [session]);
