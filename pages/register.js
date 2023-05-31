@@ -25,8 +25,12 @@ export default function Register() {
             "Content-Type": "application/json",
           },
         });
-
         const data = await response.json();
+        if (!response.ok) {
+          alert("Something went wrong. Error: " + data.message);
+          return;
+        }
+
         return data;
       }
     };
@@ -40,8 +44,12 @@ export default function Register() {
             "Content-Type": "application/json",
           },
         });
-
         const data = await response.json();
+        if (!response.ok) {
+          alert("Something went wrong. Error: " + data.message);
+          return;
+        }
+
         return data;
       }
     };

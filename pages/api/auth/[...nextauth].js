@@ -4,7 +4,7 @@ import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import OsuProvider from "next-auth/providers/osu";
 
-const client = new XataClient();
+const xata = new XataClient();
 
 const osuConfig = OsuProvider({
   clientId: process.env.OSU_CLIENT_ID,
@@ -29,7 +29,7 @@ const discordConfig = DiscordProvider({
   }, */
 });
 
-export const authOptions = {
+const authOptions = {
   providers: [osuConfig, discordConfig],
   session: { strategy: "jwt" },
   callbacks: {
@@ -75,17 +75,32 @@ export const authOptions = {
     // Or when updated (client accesses session): token is only passed
     async jwt({ token, user, account, profile, isNewUser }) {
       //on sign in
-      if (profile) {
-        if (account.provider === "osu") {
-        }
-        if (account.provider === "discord") {
-          console.log("Discord profile: ", profile);
-        }
-      }
       if (account) {
         token.provider = account.provider;
-        //token.access_token = account.access_token; //remove if unused
-        console.log("User signed in: ", token.provider);
+
+        if (account.provider === "osu" || account.provider === "discord") {
+          const dbAccount = await xata.db.nextauth_accounts
+            .filter({ "user.id": token.sub, provider: account.provider, providerAccountId: account.providerAccountId })
+            .select(["id", "user.id", "user.name", "access_token", "refresh_token", "expires_at", "last_logged_in"])
+            .getFirst();
+
+          if (dbAccount) {
+            await xata.db.nextauth_accounts.update(dbAccount.id, {
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
+              expires_at: account.expires_at,
+              last_logged_in: new Date().toISOString(),
+            });
+
+            if (profile && account.provider === "osu") {
+              if (dbAccount.user.name !== profile.username) {
+                console.log("Updating user name...");
+                await xata.db.nextauth_users.update(token.sub, { name: profile.username });
+              }
+            }
+          }
+          console.log(`${dbAccount.user.name} signed in with ${account.provider}!`);
+        }
       }
       //on session access
 
@@ -94,7 +109,6 @@ export const authOptions = {
     //exposes token client side
     async session({ session, token, user }) {
       session.provider = token.provider;
-      //session.access_token = token.access_token; //remove if unused
       session.sub = token.sub;
 
       return session;
@@ -117,7 +131,7 @@ export const authOptions = {
       console.log("Session Active");
     }, */
   },
-  adapter: XataAdapter(client),
+  adapter: XataAdapter(xata),
   pages: {
     signIn: "/not-signed-in",
   },

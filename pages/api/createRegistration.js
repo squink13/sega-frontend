@@ -236,48 +236,24 @@ const handler = async (req, res) => {
 
       const userAccessToken = discordAccount[0].access_token;
 
-      let osu_profile = await xata.db.osu_profile.filter({ id: `${osuUser.id}` }).getMany();
-
-      if (osu_profile.length === 0) {
-        osu_profile = await xata.db.osu_profile.create(`${osuUser.id}`, {
-          account: osuAccount[0].id,
-          username: osuUser.username,
-          rank: osuUser.statistics.global_rank,
-          country_code: osuUser.country_code,
-          badges: BadgeFilter(osuUser),
-          avatar_url: osuUser.avatar_url,
-        });
-      } else {
-        osu_profile = await xata.db.osu_profile.update(`${osuUser.id}`, {
-          account: osuAccount[0].id,
-          username: osuUser.username,
-          rank: osuUser.statistics.global_rank,
-          country_code: osuUser.country_code,
-          badges: BadgeFilter(osuUser),
-          avatar_url: osuUser.avatar_url,
-        });
-      }
+      const osu_profile = await xata.db.osu_profile.createOrUpdate(`${osuUser.id}`, {
+        account: osuAccount[0].id,
+        username: osuUser.username,
+        rank: osuUser.statistics.global_rank,
+        country_code: osuUser.country_code,
+        badges: BadgeFilter(osuUser),
+        avatar_url: osuUser.avatar_url,
+      });
 
       const format = discordUser.avatar && discordUser.avatar.startsWith("a_") ? "gif" : "png";
-      let discord_profile = await xata.db.discord_profile.filter({ id: discordUser.id }).getMany();
 
-      if (discord_profile.length === 0) {
-        discord_profile = await xata.db.discord_profile.create(discordUser.id, {
-          account: discordAccount[0].id,
-          username: discordUser.username,
-          discriminator: parseInt(discordUser.discriminator, 10),
-          avatar: discordUser.avatar,
-          avatar_url: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${format}`,
-        });
-      } else {
-        discord_profile = await xata.db.discord_profile.update(discordUser.id, {
-          account: discordAccount[0].id,
-          username: discordUser.username,
-          discriminator: parseInt(discordUser.discriminator, 10),
-          avatar: discordUser.avatar,
-          avatar_url: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${format}`,
-        });
-      }
+      const discord_profile = await xata.db.discord_profile.createOrUpdate(discordUser.id, {
+        account: discordAccount[0].id,
+        username: discordUser.username,
+        discriminator: parseInt(discordUser.discriminator, 10),
+        avatar: discordUser.avatar,
+        avatar_url: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${format}`,
+      });
 
       // TODO: add better errror handling and /fail endpoint
       // TODO: error handling for when user cannot be added to guild
@@ -316,7 +292,7 @@ const handler = async (req, res) => {
 
       // Add a row to the Google Sheet
       const newRow = {
-        Timestamp: registered.created_at,
+        Timestamp: registered.created_at.toISOString().slice(0, -1),
         ID: osu_profile.id,
         Username: osu_profile.username,
         Flag: osu_profile.country_code,
