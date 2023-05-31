@@ -10,15 +10,11 @@ const handler = async (req, res) => {
       .filter({ provider: "discord", "user.id": userId })
       .getAll();
 
-    console.log("records", records);
-
     let record = records.reduce((latest, current) => {
       const latestDate = new Date(latest.last_logged_in);
       const currentDate = new Date(current.last_logged_in);
       return latestDate > currentDate ? latest : current;
     });
-
-    console.log("record", record);
 
     // Check if the access_token is null before proceeding
     if (!record || !record.access_token) {

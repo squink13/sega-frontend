@@ -1,7 +1,7 @@
 import { getDiscordTag } from "@/util/DiscordUtils";
 import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import * as NextUI from "@nextui-org/react";
-import { Modal, Text, Input, Row, Checkbox, Button, Card, useTheme, Link } from "@nextui-org/react";
+import { Modal, Text, Button, Card, useTheme, Link } from "@nextui-org/react";
 import moment from "moment-timezone";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -10,71 +10,14 @@ import React from "react";
 import { Rating } from "react-simple-star-rating";
 
 export default function Register() {
-  const { data: session, status } = useSession();
-
+  const { data: session } = useSession();
   const [osuData, setOsuData] = useState(null);
   const [discordData, setDiscordData] = useState(null);
-
-  useEffect(() => {
-    const fetchOsuUser = async () => {
-      if (session) {
-        const response = await fetch("/api/db/getOsuUser", {
-          method: "POST",
-          body: JSON.stringify({ userId: session.sub }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          alert("Something went wrong. Error: " + data.message);
-          return;
-        }
-
-        return data;
-      }
-    };
-
-    const fetchDiscordUser = async () => {
-      if (session) {
-        const response = await fetch("/api/db/getDiscordUser", {
-          method: "POST",
-          body: JSON.stringify({ userId: session.sub }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          alert("Something went wrong. Error: " + data.message);
-          return;
-        }
-
-        return data;
-      }
-    };
-
-    const fetchUserData = async () => {
-      const osuUserData = await fetchOsuUser();
-      const discordUserData = await fetchDiscordUser();
-
-      setOsuData(osuUserData);
-      setDiscordData(discordUserData);
-    };
-    if (session) {
-      if (session.provider === "discord") {
-        fetchUserData();
-      }
-    }
-  }, [session]);
-
   const { isDark } = useTheme();
-  const [selected, setSelected] = useState([]);
   const [visible, setVisible] = useState(false);
   const handler = () => setVisible(true);
   const closeHandler = () => setVisible(false);
   const [timezone, setTimezone] = useState("");
-  const [profilePic, setProfilePic] = useState(null);
   const [stats, setStats] = useState({
     Aim: 0,
     Control: 0,
@@ -84,49 +27,9 @@ export default function Register() {
     Tech: 0,
   });
   const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    let totalStats = Object.values(stats).reduce((a, b) => a + b, 0);
-    setTotal(totalStats);
-  }, [stats]);
-
-  const handleStatChange = (statName, value) => {
-    setStats((prevStats) => ({ ...prevStats, [statName]: value }));
-  };
-
-  const gridStyle = {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "20px",
-  };
-
-  const itemStyle = {
-    display: "flex",
-    flexDirection: "column",
-  };
-
-  const [agreements, setAgreements] = useState({
-    readRules: false,
-    stayInDiscord: false,
-    beCaptainOrPlayer: false,
-    acceptForfeitureRules: false,
-    agreeToPlayTimes: false,
-  });
-
-  useEffect(() => {
-    const zone = moment.tz.guess();
-    let offset = moment.tz(zone).utcOffset() / 60;
-    offset = Math.floor(offset);
-    offset = parseInt(offset);
-    setTimezone(offset);
-  }, []);
-
-  const handleAgreementChange = (agreementName) => {
-    setAgreements((prevAgreements) => ({
-      ...prevAgreements,
-      [agreementName]: !prevAgreements[agreementName],
-    }));
-  };
+  const [selectedLeftOption, setSelectedLeftOption] = useState(null);
+  const [selectedRightOption, setSelectedRightOption] = useState(null);
+  const router = useRouter();
 
   const leftColumnOptions = [
     "Low AR",
@@ -204,6 +107,25 @@ export default function Register() {
     "Enjoyer",
   ].sort();
 
+  const handleStatChange = (statName, value) => {
+    setStats((prevStats) => ({ ...prevStats, [statName]: value }));
+  };
+
+  const [agreements, setAgreements] = useState({
+    readRules: false,
+    stayInDiscord: false,
+    beCaptainOrPlayer: false,
+    acceptForfeitureRules: false,
+    agreeToPlayTimes: false,
+  });
+
+  const handleAgreementChange = (agreementName) => {
+    setAgreements((prevAgreements) => ({
+      ...prevAgreements,
+      [agreementName]: !prevAgreements[agreementName],
+    }));
+  };
+
   function randomizeOptions() {
     const randomLeftOption = leftColumnOptions[Math.floor(Math.random() * leftColumnOptions.length)];
     const randomRightOption = rightColumnOptions[Math.floor(Math.random() * rightColumnOptions.length)];
@@ -211,11 +133,6 @@ export default function Register() {
     setSelectedLeftOption(randomLeftOption);
     setSelectedRightOption(randomRightOption);
   }
-
-  const [selectedLeftOption, setSelectedLeftOption] = useState(null);
-  const [selectedRightOption, setSelectedRightOption] = useState(null);
-
-  //const [canSubmit, setCanSubmit] = useState(false);
 
   function checkCanSubmit() {
     if (selectedLeftOption && selectedRightOption) {
@@ -231,9 +148,71 @@ export default function Register() {
     return false;
   }
 
-  let errorCheck = false;
+  useEffect(() => {
+    const fetchOsuUser = async () => {
+      if (session) {
+        const response = await fetch("/api/db/getOsuUser", {
+          method: "POST",
+          body: JSON.stringify({ userId: session.sub }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          alert("Something went wrong. Error: " + data.message);
+          return;
+        }
 
-  const router = useRouter();
+        return data;
+      }
+    };
+
+    const fetchDiscordUser = async () => {
+      if (session) {
+        const response = await fetch("/api/db/getDiscordUser", {
+          method: "POST",
+          body: JSON.stringify({ userId: session.sub }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          alert("Something went wrong. Error: " + data.message);
+          return;
+        }
+
+        return data;
+      }
+    };
+
+    const fetchUserData = async () => {
+      const osuUserData = await fetchOsuUser();
+      const discordUserData = await fetchDiscordUser();
+
+      setOsuData(osuUserData);
+      setDiscordData(discordUserData);
+    };
+    if (session) {
+      if (session.provider === "discord") {
+        fetchUserData();
+      }
+    }
+  }, [session]);
+
+  useEffect(() => {
+    let totalStats = Object.values(stats).reduce((a, b) => a + b, 0);
+    setTotal(totalStats);
+  }, [stats]);
+
+  useEffect(() => {
+    const zone = moment.tz.guess();
+    let offset = moment.tz(zone).utcOffset() / 60;
+    offset = Math.floor(offset);
+    offset = parseInt(offset);
+    setTimezone(offset);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -498,9 +477,15 @@ export default function Register() {
                   ) : null}
                   <Card variant="flat" style={{ padding: "12px" }}>
                     <div className="app">
-                      <div style={gridStyle}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
                         {Object.keys(stats).map((statName) => (
-                          <div style={itemStyle} key={statName}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                            key={statName}
+                          >
                             <NextUI.Text>{statName}:</NextUI.Text>
                             <Rating
                               onClick={(value) => handleStatChange(statName, value)}
