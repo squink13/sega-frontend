@@ -15,7 +15,7 @@ export default function Home() {
           textAlign: "center",
         }}
       >
-        {"Squink's Epic Gacha Showdown"}
+        {"Squink's Epic Gacha Adventure"}
       </Text>
       <Spacer y={1} />
       {status === "authenticated" ? (
