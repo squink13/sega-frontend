@@ -8,3 +8,15 @@ export function getDiscordTag(username, discriminator) {
   // Combine username and padded discriminator with '#'
   return `${username}#${paddedDiscriminator}`;
 }
+
+export function generateAvatarUrl(id, avatar) {
+  if (avatar) {
+    let format = "png";
+    if (avatar && avatar.startsWith("a_")) {
+      format = "gif";
+    }
+    return `https://cdn.discordapp.com/avatars/${id}/${avatar}.${format}`;
+  }
+
+  return null;
+}

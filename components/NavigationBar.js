@@ -67,14 +67,14 @@ export default function NavigationBar({}) {
             <div style={{ display: "none" }}>
               <Navbar.Item>
                 <Navbar.Link>
-                  <Link href={`/${session.user.id}`}>
+                  <Link href="#">
                     <Text b>{session.user.name}</Text>
                   </Link>
                 </Navbar.Link>
               </Navbar.Item>
             </div>
             <Navbar.Item>
-              <Link href={`/${session.user.id}`}>
+              <Link href="#">
                 <Avatar
                   color={"gradient"}
                   bordered

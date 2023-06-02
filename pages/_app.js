@@ -1,6 +1,6 @@
 import NavigationBar from "@/components/NavigationBar";
-import { SessionProvider } from "next-auth/react";
 import { createTheme, NextUIProvider, styled } from "@nextui-org/react";
+import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 const lightTheme = createTheme({
@@ -43,9 +43,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
                 "@xsMax": { px: "$10" },
                 maxWidth: "1366px",
                 margin: "0 auto",
-                display: "flex", // New
-                display: "grid", // New
-                placeItems: "center", // New
+                display: "flex",
+                display: "grid",
+                placeItems: "center",
               }}
             >
               <Component {...pageProps} />

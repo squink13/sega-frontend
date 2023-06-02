@@ -26,6 +26,7 @@ const tables = [
       { name: "scope", type: "string" },
       { name: "id_token", type: "text" },
       { name: "session_state", type: "string" },
+      { name: "last_logged_in", type: "datetime", defaultValue: "now" },
     ],
   },
   {
@@ -46,7 +47,6 @@ const tables = [
       { name: "avatar_url", type: "string" },
     ],
   },
-  { name: "teams", columns: [] },
   {
     name: "discord_profile",
     columns: [
@@ -73,7 +73,6 @@ const tables = [
       { name: "tech", type: "int" },
     ],
   },
-  { name: "players", columns: [] },
 ];
 /** @type { import('../../client/src').ClientConstructor<{}> } */
 const DatabaseClient = buildClient();

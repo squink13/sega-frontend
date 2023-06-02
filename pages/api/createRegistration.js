@@ -1,4 +1,4 @@
-import { getDiscordTag } from "@/util/DiscordUtils";
+import { generateAvatarUrl, getDiscordTag } from "@/util/DiscordUtils";
 import { BadgeFilter, BwsRankCalc } from "@/util/OsuUtils";
 import { XataClient } from "@/xata";
 import { GoogleSpreadsheet } from "google-spreadsheet";
@@ -245,14 +245,12 @@ const handler = async (req, res) => {
         avatar_url: osuUser.avatar_url,
       });
 
-      const format = discordUser.avatar && discordUser.avatar.startsWith("a_") ? "gif" : "png";
-
       const discord_profile = await xata.db.discord_profile.createOrUpdate(discordUser.id, {
         account: discordAccount[0].id,
         username: discordUser.username,
         discriminator: parseInt(discordUser.discriminator, 10),
         avatar: discordUser.avatar,
-        avatar_url: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${format}`,
+        avatar_url: generateAvatarUrl(discordUser.id, discordUser.avatar),
       });
 
       // TODO: add better errror handling and /fail endpoint
