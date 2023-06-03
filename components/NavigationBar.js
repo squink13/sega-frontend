@@ -67,27 +67,23 @@ export default function NavigationBar({}) {
             <div style={{ display: "none" }}>
               <Navbar.Item>
                 <Navbar.Link>
-                  <Link href="#">
-                    <Text b>{session.user.name}</Text>
-                  </Link>
+                  <Text b>{session.user.name}</Text>
                 </Navbar.Link>
               </Navbar.Item>
             </div>
             <Navbar.Item>
-              <Link href="#">
-                <Avatar
-                  color={"gradient"}
-                  bordered
-                  src={session.user.image}
-                  size="lg"
-                  css={{
-                    cursor: "pointer",
-                    ":hover": {
-                      opacity: 0.8,
-                    },
-                  }}
-                />
-              </Link>
+              <Avatar
+                color={"gradient"}
+                bordered
+                src={session.user.image}
+                size="lg"
+                css={{
+                  cursor: "pointer",
+                  ":hover": {
+                    opacity: 0.8,
+                  },
+                }}
+              />
             </Navbar.Item>
             <Navbar.Item>
               <Button

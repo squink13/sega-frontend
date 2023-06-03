@@ -22,7 +22,7 @@
     "google-spreadsheet": "^3.3.0",
     "googleapis": "^118.0.0",
     "moment-timezone": "^0.5.43",
-    "next": "^13.4.3",
+    "next": "13.4.3",
     "next-auth": "^4.22.1",
     "next-themes": "^0.2.1",
     "osu-web.js": "^1.2.2",
