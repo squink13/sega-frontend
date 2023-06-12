@@ -17,7 +17,7 @@ export default function Home() {
         {"Squink's Epic Gacha Adventure"}
       </Text>
       <Spacer y={1} />
-      <Text>Registrations have closed</Text>
+      <Text h3>Registrations have closed</Text>
       {status === "authenticated" ? (
         <>
           {/* <Link href="/register">
@@ -29,7 +29,9 @@ export default function Home() {
       ) : status === "loading" ? (
         <Text b>Loading...</Text>
       ) : (
-        <Text h3>Please log in to register</Text>
+        {
+          /*<Text h3>Please log in to register</Text>*/
+        }
       )}
     </>
   );
