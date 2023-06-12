@@ -1,6 +1,5 @@
 import { Text, Spacer, Avatar, Button, Link } from "@nextui-org/react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Client } from "osu-web.js";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -18,13 +17,14 @@ export default function Home() {
         {"Squink's Epic Gacha Adventure"}
       </Text>
       <Spacer y={1} />
+      <Text>Registrations have closed</Text>
       {status === "authenticated" ? (
         <>
-          <Link href="/register">
+          {/* <Link href="/register">
             <Button auto size="lg" color={"gradient"} shadow>
               Register
             </Button>
-          </Link>
+          </Link> */}
         </>
       ) : status === "loading" ? (
         <Text b>Loading...</Text>
