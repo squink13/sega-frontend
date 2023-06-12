@@ -18,21 +18,6 @@ export default function Home() {
       </Text>
       <Spacer y={1} />
       <Text h3>Registrations have closed</Text>
-      {status === "authenticated" ? (
-        <>
-          {/* <Link href="/register">
-            <Button auto size="lg" color={"gradient"} shadow>
-              Register
-            </Button>
-          </Link> */}
-        </>
-      ) : status === "loading" ? (
-        <Text b>Loading...</Text>
-      ) : (
-        {
-          /*<Text h3>Please log in to register</Text>*/
-        }
-      )}
     </>
   );
 }
