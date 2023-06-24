@@ -2,7 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["media.discordapp.net"],
+    domains: ["media.discordapp.net", "uploadthing.com"],
+  },
+  experimental: {
+    esmExternals: false, // THIS IS THE FLAG THAT MATTERS
   },
 };
 

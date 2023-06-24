@@ -97,6 +97,7 @@ const authOptions = {
                 console.log("Updating user name...");
                 await xata.db.nextauth_users.update(token.sub, { name: profile.username });
               }
+              token.osu_id = profile.id;
             }
           }
           console.log(`${dbAccount.user.name} signed in with ${account.provider}!`);
@@ -110,6 +111,9 @@ const authOptions = {
     async session({ session, token, user }) {
       session.provider = token.provider;
       session.sub = token.sub;
+      if (token.osu_id) {
+        session.osu_id = token.osu_id;
+      }
 
       return session;
     },

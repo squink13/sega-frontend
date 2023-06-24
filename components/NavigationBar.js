@@ -29,29 +29,17 @@ export default function NavigationBar({}) {
           />
         </Link>
       </Navbar.Brand>
-      {/**<Navbar.Content>
+      {/* <Navbar.Content>
         <Navbar.Item>
           <Navbar.Link>
-            <Link href="/">
-              <Text>Link 1</Text>
+            <Link href="/draft">
+              <Text b size={"$xl"}>
+                Draft
+              </Text>
             </Link>
           </Navbar.Link>
         </Navbar.Item>
-        <Navbar.Item>
-          <Navbar.Link>
-            <Link href="/">
-              <Text>Link 2</Text>
-            </Link>
-          </Navbar.Link>
-        </Navbar.Item>
-        <Navbar.Item>
-          <Navbar.Link>
-            <Link href="/">
-              <Text>Link 3</Text>
-            </Link>
-          </Navbar.Link>
-        </Navbar.Item>
-      </Navbar.Content>*/}
+      </Navbar.Content> */}
       <Navbar.Content>
         <div style={{ display: "none" }}>
           <Switch
