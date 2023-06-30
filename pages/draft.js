@@ -134,7 +134,7 @@ export default function Draft() {
               justifyContent: "center",
             }}
           >
-            <PlayerCard width={250} id={`${player.id}`} />
+            <PlayerCard width={340} id={`${player.id}`} />
             <div className={styles["button-placeholder"]}>
               {clickedCards.includes(player.id) && (
                 <Button flat auto style={{ marginTop: "10px" }} onClick={() => onDraftClick(player.id)}>
