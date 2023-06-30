@@ -18,8 +18,11 @@ export default function Draft() {
   const [deadline, setDeadline] = useState(null);
   const [timerKey, setTimerKey] = useState(0);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [clickedCards, setClickedCards] = useState([]);
 
   const { data: session, status } = useSession();
+
+  const [osuId, setOsuId] = useState(null);
 
   useEffect(() => {
     const ably = configureAbly({ authUrl: "/api/authentication/token-auth" });
@@ -33,32 +36,43 @@ export default function Draft() {
 
       if (message.name === "choose_event") {
         // store the player data in state
-        setPlayerData(message.data.drawnPlayers);
-        setCaptainId(message.data.captainId);
-        setCaptainName(message.data.captainName);
-        setDeadline(Date.now() + 70 * 1000);
-        setTimerKey((prevKey) => prevKey + 1);
+        console.log(osuId);
+        if (message.data.captainId == osuId || osuId == "12058601") {
+          setPlayerData(message.data.drawnPlayers);
+          setCaptainId(message.data.captainId);
+          setCaptainName(message.data.captainName);
+          setDeadline(Date.now() + 70 * 1000);
+          setTimerKey((prevKey) => prevKey + 1);
+          setClickedCards([]);
+        } else {
+          setPlayerData([]);
+          setCaptainId(message.data.captainId);
+          setCaptainName(message.data.captainName);
+          setDeadline(null);
+          setTimerKey((prevKey) => prevKey + 1);
+          setClickedCards([]);
+        }
       }
     });
     setChannel(_channel);
     return () => {
       _channel.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [osuId]);
 
   useEffect(() => {
     if (channel === null) return;
     if (status === "authenticated" && session.osu_id) {
       channel.publish("USER CONNECTED", { id: `${session.osu_id}` });
+      setOsuId(session.osu_id);
     }
   }, [channel, session?.osu_id, status]);
 
   const onCardClick = (playerId) => {
-    //setSelectedCard(playerId);
+    setClickedCards((prevCards) => [...prevCards, playerId]);
   };
 
-  const onDraftClick = () => {
+  const onDraftClick = (playerId) => {
     if (captainId == session.osu_id || session.osu_id == "12058601") {
       // find the player in the playerData array
       const chosenPlayer = playerData.find((player) => player.id === playerId);
@@ -110,7 +124,8 @@ export default function Draft() {
       <div className={styles["card-grid"]}>
         {playerData.map((player, index) => (
           <div
-            /* onClick={() => onCardClick(player.id)} */ key={index}
+            onClick={() => onCardClick(player.id)}
+            key={index}
             style={{
               cursor: "pointer",
               display: "flex",
@@ -119,10 +134,14 @@ export default function Draft() {
               justifyContent: "center",
             }}
           >
-            <PlayerCard width={250} id={`${"7537133"}`} />
-            <Button flat auto style={{ marginTop: "10px" }}>
-              Draft
-            </Button>
+            <PlayerCard width={250} id={`${player.id}`} />
+            <div className={styles["button-placeholder"]}>
+              {clickedCards.includes(player.id) && (
+                <Button flat auto style={{ marginTop: "10px" }} onClick={() => onDraftClick(player.id)}>
+                  Draft
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </div>

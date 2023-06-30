@@ -53,3 +53,12 @@
 .right-side {
   right: 0;
 }
+
+.button-placeholder {
+  height: 36px; /* Change to the actual height of your button */
+  width: 100%; /* Change to the actual width of your button */
+  display: flex;
+  flex-direction: column;
+  align-items: "center";
+  justify-content: "center";
+}
