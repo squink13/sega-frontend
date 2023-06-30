@@ -3,81 +3,87 @@ import styles from "../styles/draft.module.css";
 import { Logo } from "@/components/Icons/Logo";
 import PlayerCard from "@/components/PlayerCard";
 import { configureAbly } from "@ably-labs/react-hooks";
-import { Text } from "@nextui-org/react";
+import { Spacer, Text, Button } from "@nextui-org/react";
 import * as Ably from "ably/promises";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Countdown from "react-countdown";
 
 export default function Draft() {
-  const [logs, setLogs] = useState([]);
   const [channel, setChannel] = useState(null);
-  const [timer, setTimer] = useState(60); // Add this state
-  const [playerData, setPlayerData] = useState([]); // state for the player data
-
-  const startCountdown = () => {
-    setTimer(60);
-    const intervalId = setInterval(() => {
-      setTimer((timer) => {
-        if (timer === 1) clearInterval(intervalId);
-        return timer - 1;
-      });
-    }, 1000);
-  };
+  const [playerData, setPlayerData] = useState([]);
+  const [captainId, setCaptainId] = useState([]);
+  const [captainName, setCaptainName] = useState(null);
+  const [deadline, setDeadline] = useState(null);
+  const [timerKey, setTimerKey] = useState(0);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   const { data: session, status } = useSession();
 
   useEffect(() => {
     const ably = configureAbly({ authUrl: "/api/authentication/token-auth" });
-
     ably.connection.on((stateChange) => {
       console.log(stateChange);
     });
-
     const _channel = ably.channels.get("draft");
     _channel.subscribe((message) => {
       console.log(message);
+      // HANDLE INCOMING MESSAGES HERE
 
       if (message.name === "choose_event") {
         // store the player data in state
         setPlayerData(message.data.drawnPlayers);
-        console.log(playerData);
+        setCaptainId(message.data.captainId);
+        setCaptainName(message.data.captainName);
+        setDeadline(Date.now() + 70 * 1000);
+        setTimerKey((prevKey) => prevKey + 1);
       }
     });
     setChannel(_channel);
-
     return () => {
       _channel.unsubscribe();
     };
-  }, []); // Only run the client
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (channel === null) return;
-
     if (status === "authenticated" && session.osu_id) {
-      channel.publish("USER CONNECTED", { text: `User ${session.osu_id} connected to the draft` });
+      channel.publish("USER CONNECTED", { id: `${session.osu_id}` });
     }
   }, [channel, session?.osu_id, status]);
 
-  const publicFromServerHandler = (_event) => {
-    fetch("/api/pub-sub/publish", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ text: `test message @ ${new Date().toISOString()}` }),
-    });
+  const onCardClick = (playerId) => {
+    //setSelectedCard(playerId);
   };
 
-  const onCardClick = (playerId) => {
-    // find the player in the playerData array
-    const chosenPlayer = playerData.find((player) => player.id === playerId);
+  const onDraftClick = () => {
+    if (captainId == session.osu_id || session.osu_id == "12058601") {
+      // find the player in the playerData array
+      const chosenPlayer = playerData.find((player) => player.id === playerId);
 
-    // Publish the response
-    channel.publish("response_event", {
-      captainId: chosenPlayer.captainId,
-      chosenPlayer: chosenPlayer,
-    });
+      // Publish the response
+      channel.publish("response_event", {
+        captainId: session.osu_id,
+        chosenPlayer: chosenPlayer,
+      });
+    }
+
+    //setSelectedCard(null);
+  };
+
+  // Renderer callback with condition to render only minute and seconds
+  const renderer = ({ minutes, seconds, completed }) => {
+    if (completed) {
+      return <div>Out of time!</div>;
+    } else {
+      return (
+        <span>
+          {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+        </span>
+      );
+    }
   };
 
   return (
@@ -95,14 +101,34 @@ export default function Draft() {
       >
         SEGA Draft
       </Text>
+      <Spacer y={1} />
+      {captainName && (
+        <Text h2 className={styles.captainTitle}>
+          {captainName + " is currently drafting"}
+        </Text>
+      )}
       <div className={styles["card-grid"]}>
         {playerData.map((player, index) => (
-          <div onClick={() => onCardClick(player.id)} key={index}>
-            <PlayerCard width={250} id={player.id} />
+          <div
+            /* onClick={() => onCardClick(player.id)} */ key={index}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <PlayerCard width={250} id={`${"7537133"}`} />
+            <Button flat auto style={{ marginTop: "10px" }}>
+              Draft
+            </Button>
           </div>
         ))}
       </div>
-      <div className={styles.timer}></div>
+      <div className={styles.timer}>
+        <Text h2>{deadline && <Countdown key={timerKey} date={deadline} renderer={renderer} />}</Text>
+      </div>
       <div className={styles["left-side"]}></div>
       <div className={styles["right-side"]}></div>
     </div>

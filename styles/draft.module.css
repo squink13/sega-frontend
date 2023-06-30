@@ -20,6 +20,11 @@
   padding: 20px;
 }
 
+.captainTitle {
+  position: absolute;
+  top: 120px;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
