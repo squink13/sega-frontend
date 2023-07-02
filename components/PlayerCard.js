@@ -6,17 +6,17 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import ReactCardFlip from "react-card-flip";
 
-export default function PlayerCard({ width = 400, id }) {
+export default function PlayerCard({ width = 400, id, flipped, tier }) {
   const [cardUrl, setCardUrl] = useState(); // Default value
   const cardRef = useRef();
 
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const handleFlip = () => {
+  /* const handleFlip = () => {
     if (!isFlipped) {
       setIsFlipped(!isFlipped);
     }
-  };
+  }; */
 
   useEffect(() => {
     console.log(id);
@@ -50,12 +50,12 @@ export default function PlayerCard({ width = 400, id }) {
 
   return (
     <>
-      <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
-        <div onClick={handleFlip}>
+      <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
+        <div>
           <img src={"backside.png"} width={width} height={width * 1.4} className={styles["image"]} alt="Card" />
         </div>
 
-        <div onClick={handleFlip}>
+        <div>
           {fileType === "webm" ? (
             <>
               <video ref={cardRef} autoPlay loop muted width={`${width}px`} className={styles["video"]}>

@@ -62,3 +62,11 @@
   align-items: "center";
   justify-content: "center";
 }
+
+.timesPulledTitle {
+  position: absolute;
+  top: -7%; /* This puts the element at the top of the card */
+  left: 50%; /* This centers the element horizontally within the card */
+  transform: translateX(-50%); /* This ensures the centering is correct even if the element's width changes */
+  z-index: 1;
+}

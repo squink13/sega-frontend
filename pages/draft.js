@@ -3,8 +3,9 @@ import styles from "../styles/draft.module.css";
 import { Logo } from "@/components/Icons/Logo";
 import PlayerCard from "@/components/PlayerCard";
 import { configureAbly } from "@ably-labs/react-hooks";
-import { Spacer, Text, Button } from "@nextui-org/react";
+import { Spacer, Text, Button, Modal } from "@nextui-org/react";
 import * as Ably from "ably/promises";
+import { motion } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,6 +20,11 @@ export default function Draft() {
   const [timerKey, setTimerKey] = useState(0);
   const [selectedCard, setSelectedCard] = useState(null);
   const [clickedCards, setClickedCards] = useState([]);
+  const [timeouts, setTimeouts] = useState([]);
+  const [countdownEnded, setCountdownEnded] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [draftedPlayer, setDraftedPlayer] = useState(null);
+  const [round, setRound] = useState(null);
 
   const { data: session, status } = useSession();
 
@@ -41,24 +47,49 @@ export default function Draft() {
           setPlayerData(message.data.drawnPlayers);
           setCaptainId(message.data.captainId);
           setCaptainName(message.data.captainName);
-          setDeadline(Date.now() + 70 * 1000);
+          setDeadline(null);
           setTimerKey((prevKey) => prevKey + 1);
           setClickedCards([]);
-        } else {
+          setTimeouts([]);
+          setCountdownEnded(false);
+          setDraftedPlayer(null);
+
+          // Automatically 'click' each card one by one
+          message.data.drawnPlayers.forEach((player, index) => {
+            const timeoutId = setTimeout(() => {
+              setClickedCards((prevCards) => [...prevCards, player.id]);
+            }, 3500 * (index + 1));
+
+            setTimeouts((prevTimeouts) => [...prevTimeouts, timeoutId]);
+          });
+        } /* else {
           setPlayerData([]);
           setCaptainId(message.data.captainId);
           setCaptainName(message.data.captainName);
           setDeadline(null);
           setTimerKey((prevKey) => prevKey + 1);
           setClickedCards([]);
-        }
+          setTimeouts([]);
+          setCountdownEnded(false);
+        } */
+      }
+
+      /* if (message.name == "response_event") {
+        setCaptainId(message.data.captainId);
+        setCaptainName(message.data.captainName);
+        setDraftedPlayer(message.data.chosenPlayer.id); // or whichever property the username is under
+      } */
+
+      if (message.name === "current_round") {
+        setRound(message.data.round);
       }
     });
     setChannel(_channel);
     return () => {
       _channel.unsubscribe();
+      timeouts.forEach((timeout) => clearTimeout(timeout));
     };
-  }, [osuId]);
+  }, [osuId, timeouts]);
 
   useEffect(() => {
     if (channel === null) return;
@@ -68,9 +99,23 @@ export default function Draft() {
     }
   }, [channel, session?.osu_id, status]);
 
-  const onCardClick = (playerId) => {
-    setClickedCards((prevCards) => [...prevCards, playerId]);
-  };
+  useEffect(() => {
+    // Begin countdown when all cards have been clicked
+    if (playerData.length === 0) return;
+    if (clickedCards.length === playerData.length) {
+      setDeadline(Date.now() + 60 * 1000); // Start the countdown
+      setTimerKey((prevKey) => prevKey + 1);
+    }
+  }, [clickedCards, playerData]);
+
+  /* const onCardClick = (playerId) => {
+    setClickedCards((prevCards) => {
+      if (!prevCards.includes(playerId)) {
+        return [...prevCards, playerId];
+      }
+      return prevCards;
+    });
+  }; */
 
   const onDraftClick = (playerId) => {
     if (captainId == session.osu_id || session.osu_id == "12058601") {
@@ -81,6 +126,7 @@ export default function Draft() {
       channel.publish("response_event", {
         captainId: session.osu_id,
         chosenPlayer: chosenPlayer,
+        captainName: captainName,
       });
     }
 
@@ -90,6 +136,7 @@ export default function Draft() {
   // Renderer callback with condition to render only minute and seconds
   const renderer = ({ minutes, seconds, completed }) => {
     if (completed) {
+      setCountdownEnded(true); // update countdown status
       return <div>Out of time!</div>;
     } else {
       return (
@@ -124,27 +171,54 @@ export default function Draft() {
       <div className={styles["card-grid"]}>
         {playerData.map((player, index) => (
           <div
-            onClick={() => onCardClick(player.id)}
             key={index}
             style={{
-              cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              position: "relative",
             }}
           >
-            <PlayerCard width={340} id={`${player.id}`} />
-            <div className={styles["button-placeholder"]}>
-              {clickedCards.includes(player.id) && (
-                <Button flat auto style={{ marginTop: "10px" }} onClick={() => onDraftClick(player.id)}>
-                  Draft
-                </Button>
-              )}
-            </div>
+            {clickedCards.length === playerData.length && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
+                className={styles.timesPulledTitle}
+              >
+                <Text h4>{"Times Pulled: " + player.timesPulled}</Text>
+              </motion.div>
+            )}
+
+            <PlayerCard width={340} id={`${player.id}`} flipped={clickedCards.includes(player.id)} tier={player.tier} />
+
+            {clickedCards.length === playerData.length && (
+              <motion.div
+                className={styles["button-placeholder"]}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
+              >
+                {countdownEnded && osuId == "12058601" ? (
+                  <Button flat color="error" style={{ marginTop: "10px" }} onClick={() => onDraftClick(player.id)}>
+                    Draft
+                  </Button>
+                ) : countdownEnded ? (
+                  <Button flat disabled color="error" style={{ marginTop: "10px" }}>
+                    Draft
+                  </Button>
+                ) : (
+                  <Button flat style={{ marginTop: "10px" }} onClick={() => onDraftClick(player.id)}>
+                    Draft
+                  </Button>
+                )}
+              </motion.div>
+            )}
           </div>
         ))}
       </div>
+
       <div className={styles.timer}>
         <Text h2>{deadline && <Countdown key={timerKey} date={deadline} renderer={renderer} />}</Text>
       </div>
